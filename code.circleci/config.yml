@@ -6,7 +6,7 @@ jobs:
     steps:
       - checkout
       - run: 
-      ### STAT513 Final Project Programming###
+      ###  Final Project Programming###
 install.packages("LearnBayes")
 library(LearnBayes)
 ##The Prior##
