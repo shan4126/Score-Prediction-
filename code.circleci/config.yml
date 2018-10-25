@@ -1,0 +1,78 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/ruby:2.4.1
+    steps:
+      - checkout
+      - run: 
+      ### STAT513 Final Project Programming###
+install.packages("LearnBayes")
+library(LearnBayes)
+##The Prior##
+beta.select(list(p=0.5,x=0.31),list(p=0.8,x=0.35))
+##The Posterior##
+a=31
+b=68
+n=length(y)
+s=sum(y)
+##n=92 and s=309##
+##P50 simulation##
+p=rbeta(1000,n+a,s+b)
+##P53##
+hist(p,main="")
+##P55##
+quantile(p,c(0.05,0.5,0.95))
+quantile(p,c(0.025,0.5,0.975))
+mean(p>0.260)
+##P70##
+predict=function(){
+    p=rbeta(1,n+a,s+b)
+    rgeom(n,p)
+}
+predict()
+##P77##
+table(y)
+ys=predict()
+table(ys)
+##P87##
+model.check=function()
+{
+p=rbeta(1,123,377)
+ys=rgeom(n,p)
+sd(ys)
+}
+T = replicate(1000,model.check())
+hist(T)
+abline(v=sd(y),lwd=3,col="red")
+##P116##
+beta.geom=function(theta,y)
+{
+eta=exp(theta[1])/(1+exp(theta[1]))
+K = exp(theta[2])
+N = length(y)
+a=K*eta
+b=K*(1-eta)
+sum(lbeta(a+1,y+b))-N*lbeta(a,b)+theta[2]-2*log(1+exp(theta[2]))
+}
+##P126##
+#read in beta.geom function
+guess.at.mode=c(1,1)
+fit=laplace(beta.geom,guess.at.mode,y)
+fit
+##P133##
+mycontour(beta.geom,c(-1.6,-0.2,0,8),y,xlab="logit(eta)",ylab="log K")
+##P155##
+mcmc.fit=rwmetrop(beta.geom,list(var=fit$var,scale=2),fit$mode,10000,y)
+mcmc.fit
+##P166##
+install.packages("coda")
+library(coda)
+dimnames(mcmc.fit$par)[[2]]=c("logit eta","log K")
+sim.draws=mcmc(mcmc.fit$par)
+plot(sim.draws)
+autocorr.plot(sim.draws)
+summary(sim.draws)
+##170##
+mycontour(beta.geom,c(-1.6,-0.2,0,8),y,xlab="logit(eta)",ylab="log K")
+points(mcmc.fit$par,cex=0.5)
